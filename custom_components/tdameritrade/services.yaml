@@ -1,0 +1,40 @@
+get_quote:
+  description: Get quote for specified symbol
+  fields:
+    symbol:
+      description: Ticker symbol for desired equity
+      example: SPMD
+
+place_order:
+  description: Place a trade
+  fields:
+    price:
+      description: Price
+      example: 10.00
+    instruction:
+      description: "'BUY' or 'SELL' or 'BUY_TO_COVER' or 'SELL_SHORT' or 'BUY_TO_OPEN' or 'BUY_TO_CLOSE' or 'SELL_TO_OPEN' or 'SELL_TO_CLOSE' or 'EXCHANGE'"
+      example: BUY
+    quantity:
+      description: Quantity
+      example: 5
+    symbol:
+      description: Symbol
+      example: SPMD
+    account_id:
+      description: Account Number
+      example: 012344567
+    order_type:
+      description: "'MARKET' or 'LIMIT' or 'STOP' or 'STOP_LIMIT' or 'TRAILING_STOP' or 'MARKET_ON_CLOSE' or 'EXERCISE' or 'TRAILING_STOP_LIMIT' or 'NET_DEBIT' or 'NET_CREDIT' or 'NET_ZERO'"
+      example: LIMIT
+    session:
+      description: "'NORMAL' or 'AM' or 'PM' or 'SEAMLESS'"
+      example: NORMAL
+    duration:
+      description: "'DAY' or 'GOOD_TILL_CANCEL' or 'FILL_OR_KILL'"
+      example: DAY
+    orderStrategyType:
+      description: "'SINGLE' or 'OCO' or 'TRIGGER'"
+      example: SINGLE
+    assetType:
+      description: "'EQUITY' or 'OPTION' or 'INDEX' or 'MUTUAL_FUND' or 'CASH_EQUIVALENT' or 'FIXED_INCOME' or 'CURRENCY'"
+      example: EQUITY

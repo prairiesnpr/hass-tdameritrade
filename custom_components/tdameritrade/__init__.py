@@ -32,7 +32,6 @@ CONFIG_SCHEMA = vol.Schema(
     extra=vol.ALLOW_EXTRA,
 )
 
-# For your initial PR, limit it to 1 platform.
 PLATFORMS = ["binary_sensor", "sensor"]
 
 

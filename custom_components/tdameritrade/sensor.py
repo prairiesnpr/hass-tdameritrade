@@ -13,7 +13,6 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     sensors = []
 
     for client in hass.data[TDA_DOMAIN].items():
-        # _LOGGER.error(config.as_dict())
         for account_id in config.options[CONF_ACCOUNTS]:
             sensors.append(AccountValueSensor(client, account_id))
     add_entities(sensors)

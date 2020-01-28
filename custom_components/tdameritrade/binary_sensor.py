@@ -4,6 +4,7 @@ import logging
 
 from homeassistant.components.binary_sensor import BinarySensorDevice
 from .const import DOMAIN as TDA_DOMAIN
+from homeassistant.util import dt
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,4 +46,19 @@ class MarketOpenSensor(BinarySensorDevice):
         """Update the state of this sensor (Market Open)."""
 
         resp = await self._client.async_get_market_hours("EQUITY")
-        self._state = resp["equity"]["EQ"]["isOpen"]
+
+        market_open = dt.parse_datetime(
+            resp["equity"]["EQ"]["sessionHours"]["regularMarket"][0]["start"]
+        )
+        market_close = dt.parse_datetime(
+            resp["equity"]["EQ"]["sessionHours"]["regularMarket"][0]["end"]
+        )
+
+        if (
+            dt.as_utc(market_open) > dt.utcnow()
+            and dt.as_utc(market_close) < dt.utcnow()
+        ):
+            self._state = True
+        else:
+            self._state = False
+

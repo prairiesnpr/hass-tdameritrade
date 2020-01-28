@@ -40,7 +40,7 @@ class AccountValueSensor(Entity):
     @property
     def name(self):
         """Return the name of the binary sensor."""
-        return f"{self._name} [{self.account_id}]"
+        return f"{self._name} #--{self.account_id[-4:]}"
 
     @property
     def unit_of_measurement(self):

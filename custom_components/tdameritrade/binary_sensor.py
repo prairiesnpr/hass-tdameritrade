@@ -48,6 +48,11 @@ class MarketOpenSensor(BinarySensorDevice):
         """Return device specific state attributes."""
         return self._attributes
 
+    @property
+    def icon(self):
+        """Return the class of this binary sensor."""
+        return "mdi:finance"
+
     async def async_update(self):
         """Update the state of this sensor (Market Open)."""
 

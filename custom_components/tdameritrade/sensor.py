@@ -52,6 +52,11 @@ class AccountValueSensor(Entity):
         """Return device specific state attributes."""
         return self._attributes
 
+    @property
+    def icon(self):
+        """Return the class of this binary sensor."""
+        return "mdi:cash"
+
     async def async_update(self):
         """Update the state from the sensor."""
         _LOGGER.debug("Updating sensor: %s", self._name)

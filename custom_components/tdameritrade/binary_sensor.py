@@ -67,4 +67,3 @@ class MarketOpenSensor(BinarySensorDevice):
         else:
             self._state = False
         self._attributes = resp
-

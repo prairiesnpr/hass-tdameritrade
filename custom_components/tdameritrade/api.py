@@ -1,7 +1,7 @@
 """API for TDAmeritrade bound to Home Assistant OAuth."""
 
 from aiohttp import ClientSession
-import td_ameritrade_api as td
+import tdameritrade_api as td
 
 from homeassistant.helpers import config_entry_oauth2_flow
 

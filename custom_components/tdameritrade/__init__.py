@@ -5,7 +5,7 @@ import voluptuous as vol
 
 from typing import Any
 
-from td_ameritrade_api import AbstractAuth, AmeritradeAPI
+from tdameritrade_api import AbstractAuth, AmeritradeAPI
 from aiohttp import ClientSession
 
 from homeassistant.config_entries import ConfigEntry

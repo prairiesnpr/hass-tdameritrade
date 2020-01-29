@@ -12,5 +12,15 @@
             }
         },
         "title": "TDAmeritrade"
+    },
+    "options": {
+        "step": {
+            "tda_settings": {
+                "data": {
+                    "accounts": "Accounts"
+                },
+                "description": "Options for TDAmeritrade"
+            }
+        }
     }
 }

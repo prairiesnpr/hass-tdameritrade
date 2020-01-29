@@ -12,5 +12,15 @@
     "create_entry": {
       "default": "Successfully authenticated with TDAmeritrade."
     }
+  },
+  "options": {
+    "step": {
+      "tda_settings": {
+        "description": "Options for TDAmeritrade",
+        "data": {
+          "accounts": "Accounts"
+        }
+      }
+    }
   }
 }

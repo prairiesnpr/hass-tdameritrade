@@ -60,9 +60,8 @@ class MarketOpenSensor(BinarySensorDevice):
             resp["equity"]["EQ"]["sessionHours"]["regularMarket"][0]["end"]
         )
 
-        if (
-            dt.as_utc(market_open) > dt.utcnow()
-            and dt.as_utc(market_close) > dt.utcnow()
+        if (dt.as_utc(market_open) < dt.utcnow()) and (
+            dt.utcnow() < dt.as_utc(market_close)
         ):
             self._state = True
         else:

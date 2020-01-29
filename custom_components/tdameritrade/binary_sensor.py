@@ -26,6 +26,7 @@ class MarketOpenSensor(BinarySensorDevice):
         self._state = None
         self._name = "Market"
         self._client = client[1]
+        self._attributes = {}
 
     @property
     def device_class(self):
@@ -42,6 +43,11 @@ class MarketOpenSensor(BinarySensorDevice):
         """Return the state of the binary sensor."""
         return self._state
 
+    @property
+    def device_state_attributes(self):
+        """Return device specific state attributes."""
+        return self._attributes
+
     async def async_update(self):
         """Update the state of this sensor (Market Open)."""
 
@@ -56,9 +62,10 @@ class MarketOpenSensor(BinarySensorDevice):
 
         if (
             dt.as_utc(market_open) > dt.utcnow()
-            and dt.as_utc(market_close) < dt.utcnow()
+            and dt.as_utc(market_close) > dt.utcnow()
         ):
             self._state = True
         else:
             self._state = False
+        self._attributes = resp
 

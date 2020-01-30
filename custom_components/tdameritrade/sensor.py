@@ -61,7 +61,7 @@ class AccountValueSensor(Entity):
         """Update the state from the sensor."""
         _LOGGER.debug("Updating sensor: %s", self._name)
         resp = await self._client.async_get_account(self.account_id)
-        self._attributes = resp
+        self._attributes = resp["securitiesAccount"]
         if resp["securitiesAccount"]["type"] == "MARGIN":
             self.current_value = resp["securitiesAccount"]["currentBalances"][
                 "availableFunds"

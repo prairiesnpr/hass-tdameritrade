@@ -82,7 +82,7 @@ action:
   data_template:
     variables:
       ticker: SPMD 
-      account: "{{ states.sensor.available_funds_0218.attributes.securitiesAccount.accountId }}"  
+      account: "{{ states.sensor.available_funds_0218.attributes.accountId }}"  
       av_funds: "{{ states.sensor.available_funds_0218.state }}"
 ```
 

@@ -4,6 +4,13 @@
     "step": {
       "pick_implementation": {
         "title": "Pick Authentication Method"
+      },
+      "user": {
+        "title": "Set Consumer Key and Choose Accounts",
+        "data": {
+          "accounts": "Accounts",
+          "consumer_key": "Consumer Key"
+        }
       }
     },
     "abort": {

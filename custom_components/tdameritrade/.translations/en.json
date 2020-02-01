@@ -9,6 +9,13 @@
         "step": {
             "pick_implementation": {
                 "title": "Pick Authentication Method"
+            },
+            "user": {
+                "data": {
+                    "accounts": "Accounts",
+                    "consumer_key": "Consumer Key"
+                },
+                "title": "Set Consumer Key and Choose Accounts"
             }
         },
         "title": "TDAmeritrade"

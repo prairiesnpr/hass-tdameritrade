@@ -3,8 +3,8 @@
 import logging
 
 from homeassistant.components.binary_sensor import BinarySensorDevice
-from .const import DOMAIN as TDA_DOMAIN
 from homeassistant.util import dt
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -12,8 +12,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     """Set up the TDAmeritrade binary sensor platform."""
     sensors = []
-    for client in hass.data[TDA_DOMAIN].items():
-        sensors.append(MarketOpenSensor(client))
+    sensors.append(MarketOpenSensor(hass.data[config.entry_id]))
     add_entities(sensors)
     return True
 
@@ -25,7 +24,7 @@ class MarketOpenSensor(BinarySensorDevice):
         """Initialize of a market binary sensor."""
         self._state = None
         self._name = "Market"
-        self._client = client[1]
+        self._client = client
         self._attributes = {"preMarket": False, "postMarket": False}
 
     @property
@@ -114,4 +113,3 @@ class MarketOpenSensor(BinarySensorDevice):
             self._attributes["postMarket"] = True
         else:
             self._attributes["postMarket"] = False
-

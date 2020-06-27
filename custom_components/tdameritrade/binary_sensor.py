@@ -3,8 +3,8 @@
 import logging
 
 from homeassistant.components.binary_sensor import BinarySensorDevice
-from .const import DOMAIN as TDA_DOMAIN
 from homeassistant.util import dt
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -12,8 +12,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     """Set up the TDAmeritrade binary sensor platform."""
     sensors = []
-    for client in hass.data[TDA_DOMAIN].items():
-        sensors.append(MarketOpenSensor(client))
+    sensors.append(MarketOpenSensor(hass.data[config.entry_id]))
     add_entities(sensors)
     return True
 
@@ -25,7 +24,7 @@ class MarketOpenSensor(BinarySensorDevice):
         """Initialize of a market binary sensor."""
         self._state = None
         self._name = "Market"
-        self._client = client[1]
+        self._client = client
         self._attributes = {"preMarket": False, "postMarket": False}
 
     @property
@@ -57,61 +56,70 @@ class MarketOpenSensor(BinarySensorDevice):
         """Update the state of this sensor (Market Open)."""
 
         resp = await self._client.async_get_market_hours("EQUITY")
-
-        if (
-            dt.as_utc(
-                dt.parse_datetime(
-                    resp["equity"]["EQ"]["sessionHours"]["regularMarket"][0]["start"]
+        try:
+            if (
+                dt.as_utc(
+                    dt.parse_datetime(
+                        resp["equity"]["EQ"]["sessionHours"]["regularMarket"][0][
+                            "start"
+                        ]
+                    )
                 )
-            )
-            < dt.utcnow()
-        ) and (
-            dt.utcnow()
-            < dt.as_utc(
-                dt.parse_datetime(
-                    resp["equity"]["EQ"]["sessionHours"]["regularMarket"][0]["end"]
+                < dt.utcnow()
+            ) and (
+                dt.utcnow()
+                < dt.as_utc(
+                    dt.parse_datetime(
+                        resp["equity"]["EQ"]["sessionHours"]["regularMarket"][0]["end"]
+                    )
                 )
-            )
-        ):
-            self._state = True
-        else:
+            ):
+                self._state = True
+            else:
+                self._state = False
+        except KeyError:
             self._state = False
-
-        if (
-            dt.as_utc(
-                dt.parse_datetime(
-                    resp["equity"]["EQ"]["sessionHours"]["preMarket"][0]["start"]
+        try:
+            if (
+                dt.as_utc(
+                    dt.parse_datetime(
+                        resp["equity"]["EQ"]["sessionHours"]["preMarket"][0]["start"]
+                    )
                 )
-            )
-            < dt.utcnow()
-        ) and (
-            dt.utcnow()
-            < dt.as_utc(
-                dt.parse_datetime(
-                    resp["equity"]["EQ"]["sessionHours"]["preMarket"][0]["end"]
+                < dt.utcnow()
+            ) and (
+                dt.utcnow()
+                < dt.as_utc(
+                    dt.parse_datetime(
+                        resp["equity"]["EQ"]["sessionHours"]["preMarket"][0]["end"]
+                    )
                 )
-            )
-        ):
-            self._attributes["preMarket"] = True
-        else:
+            ):
+                self._attributes["preMarket"] = True
+            else:
+                self._attributes["preMarket"] = False
+        except KeyError:
             self._attributes["preMarket"] = False
 
-        if (
-            dt.as_utc(
-                dt.parse_datetime(
-                    resp["equity"]["EQ"]["sessionHours"]["postMarket"][0]["start"]
-                )
-            )
-            < dt.utcnow()
-        ) and (
-            dt.utcnow()
-            < dt.as_utc(
-                dt.parse_datetime(
-                    resp["equity"]["EQ"]["sessionHours"]["postMarket"][0]["end"]
-                )
-            )
-        ):
-            self._attributes["postMarket"] = True
-        else:
-            self._attributes["postMarket"] = False
+        try:
 
+            if (
+                dt.as_utc(
+                    dt.parse_datetime(
+                        resp["equity"]["EQ"]["sessionHours"]["postMarket"][0]["start"]
+                    )
+                )
+                < dt.utcnow()
+            ) and (
+                dt.utcnow()
+                < dt.as_utc(
+                    dt.parse_datetime(
+                        resp["equity"]["EQ"]["sessionHours"]["postMarket"][0]["end"]
+                    )
+                )
+            ):
+                self._attributes["postMarket"] = True
+            else:
+                self._attributes["postMarket"] = False
+        except KeyError:
+            self._attributes["postMarket"] = False

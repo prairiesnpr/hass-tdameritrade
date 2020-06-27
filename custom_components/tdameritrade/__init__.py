@@ -1,12 +1,8 @@
 """The TDAmeritrade integration."""
 import asyncio
 
-import voluptuous as vol
+from tdameritrade_api import AmeritradeAPI
 
-from typing import Any
-
-from tdameritrade_api import AbstractAuth, AmeritradeAPI
-from aiohttp import ClientSession
 
 from homeassistant.config_entries import ConfigEntry
 
@@ -14,83 +10,79 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import (
     aiohttp_client,
     config_entry_oauth2_flow,
-    config_validation as cv,
 )
 
 from . import config_flow
 from .const import (
     DOMAIN,
-    OAUTH2_AUTHORIZE,
-    OAUTH2_TOKEN,
     TDA_URL,
-    CONF_CONSUMER_KEY,
 )
 
 
-CONFIG_SCHEMA = vol.Schema(
-    {DOMAIN: vol.Schema({vol.Required(CONF_CONSUMER_KEY): cv.string})},
-    extra=vol.ALLOW_EXTRA,
-)
+# CONFIG_SCHEMA = vol.Schema(
+#    {DOMAIN: vol.Schema({vol.Required(CONF_CONSUMER_KEY): cv.string})},
+#    extra=vol.ALLOW_EXTRA,
+# )
 
 PLATFORMS = ["binary_sensor", "sensor"]
 
 
-class TDAmeritradeLocalOAuth2Implementation(
-    config_entry_oauth2_flow.LocalOAuth2Implementation
-):
-    """Local OAuth2 implementation."""
+# class TDAmeritradeLocalOAuth2Implementation(
+#     config_entry_oauth2_flow.LocalOAuth2Implementation
+# ):
+#     """Local OAuth2 implementation."""
 
-    async def async_resolve_external_data(self, external_data: Any) -> dict:
-        """Resolve the authorization code to tokens."""
-        return await self._token_request(
-            {
-                "grant_type": "authorization_code",
-                "code": external_data,
-                "redirect_uri": self.redirect_uri,
-                "access_type": "offline",
-            }
-        )
+#     async def async_resolve_external_data(self, external_data: Any) -> dict:
+#         """Resolve the authorization code to tokens."""
+#         return await self._token_request(
+#             {
+#                 "grant_type": "authorization_code",
+#                 "code": external_data,
+#                 "redirect_uri": self.redirect_uri,
+#                 "access_type": "offline",
+#             }
+#         )
 
 
-class TDAmeritradeOAuth(AbstractAuth):
-    """TDAmeritrade Authentication using OAuth2."""
+# class TDAmeritradeOAuth(AbstractAuth):
+#     """TDAmeritrade Authentication using OAuth2."""
 
-    def __init__(
-        self,
-        host: str,
-        websession: ClientSession,
-        oauth_session: config_entry_oauth2_flow.OAuth2Session,
-    ):
-        """Initialize TDA auth."""
-        super().__init__(websession, host)
-        self._oauth_session = oauth_session
+#     def __init__(
+#         self,
+#         host: str,
+#         websession: ClientSession,
+#         oauth_session: config_entry_oauth2_flow.OAuth2Session,
+#     ):
+#         """Initialize TDA auth."""
+#         super().__init__(websession, host)
+#         self._oauth_session = oauth_session
 
-    async def async_get_access_token(self):
-        """Return a valid access token."""
-        if not self._oauth_session.valid_token:
-            await self._oauth_session.async_ensure_token_valid()
+#     async def async_get_access_token(self):
+#         """Return a valid access token."""
+#         if not self._oauth_session.valid_token:
+#             await self._oauth_session.async_ensure_token_valid()
 
-        return self._oauth_session.token["access_token"]
+#         return self._oauth_session.token["access_token"]
 
 
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the TDAmeritrade component."""
-    hass.data[DOMAIN] = {}
+    # hass.data[DOMAIN] = {}
 
-    if DOMAIN not in config:
-        return
+    # if DOMAIN not in config:
+    #    return
 
-    config_flow.OAuth2FlowHandler.async_register_implementation(
-        hass,
-        TDAmeritradeLocalOAuth2Implementation(
-            hass,
-            DOMAIN,
-            config[DOMAIN][CONF_CONSUMER_KEY],
-            None,
-            OAUTH2_AUTHORIZE,
-            OAUTH2_TOKEN,
-        ),
-    )
+    # config_flow.OAuth2FlowHandler.async_register_implementation(
+    #     hass,
+    #     TDAmeritradeLocalOAuth2Implementation(
+    #         hass,
+    #         DOMAIN,
+    #         config[DOMAIN][CONF_CONSUMER_KEY],
+    #         None,
+    #         OAUTH2_AUTHORIZE,
+    #         OAUTH2_TOKEN,
+    #     ),
+    # )
 
     return True
 
@@ -106,7 +98,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     oauth_session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
 
-    auth = TDAmeritradeOAuth(TDA_URL, websession, oauth_session)
+    auth = config_flow.TDAmeritradeOAuth(TDA_URL, websession, oauth_session)
 
     tda_api = AmeritradeAPI(auth)
 
@@ -153,8 +145,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.services.async_register(DOMAIN, "place_order", place_order_service)
     hass.services.async_register(DOMAIN, "get_quote", get_quote_service)
 
-    hass.data[DOMAIN][entry.entry_id] = tda_api
-
+    hass.data[entry.entry_id] = tda_api
     for component in PLATFORMS:
         hass.async_create_task(
             hass.config_entries.async_forward_entry_setup(entry, component)

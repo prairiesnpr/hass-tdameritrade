@@ -56,60 +56,70 @@ class MarketOpenSensor(BinarySensorDevice):
         """Update the state of this sensor (Market Open)."""
 
         resp = await self._client.async_get_market_hours("EQUITY")
-
-        if (
-            dt.as_utc(
-                dt.parse_datetime(
-                    resp["equity"]["EQ"]["sessionHours"]["regularMarket"][0]["start"]
+        try:
+            if (
+                dt.as_utc(
+                    dt.parse_datetime(
+                        resp["equity"]["EQ"]["sessionHours"]["regularMarket"][0][
+                            "start"
+                        ]
+                    )
                 )
-            )
-            < dt.utcnow()
-        ) and (
-            dt.utcnow()
-            < dt.as_utc(
-                dt.parse_datetime(
-                    resp["equity"]["EQ"]["sessionHours"]["regularMarket"][0]["end"]
+                < dt.utcnow()
+            ) and (
+                dt.utcnow()
+                < dt.as_utc(
+                    dt.parse_datetime(
+                        resp["equity"]["EQ"]["sessionHours"]["regularMarket"][0]["end"]
+                    )
                 )
-            )
-        ):
-            self._state = True
-        else:
+            ):
+                self._state = True
+            else:
+                self._state = False
+        except KeyError:
             self._state = False
-
-        if (
-            dt.as_utc(
-                dt.parse_datetime(
-                    resp["equity"]["EQ"]["sessionHours"]["preMarket"][0]["start"]
+        try:
+            if (
+                dt.as_utc(
+                    dt.parse_datetime(
+                        resp["equity"]["EQ"]["sessionHours"]["preMarket"][0]["start"]
+                    )
                 )
-            )
-            < dt.utcnow()
-        ) and (
-            dt.utcnow()
-            < dt.as_utc(
-                dt.parse_datetime(
-                    resp["equity"]["EQ"]["sessionHours"]["preMarket"][0]["end"]
+                < dt.utcnow()
+            ) and (
+                dt.utcnow()
+                < dt.as_utc(
+                    dt.parse_datetime(
+                        resp["equity"]["EQ"]["sessionHours"]["preMarket"][0]["end"]
+                    )
                 )
-            )
-        ):
-            self._attributes["preMarket"] = True
-        else:
+            ):
+                self._attributes["preMarket"] = True
+            else:
+                self._attributes["preMarket"] = False
+        except KeyError:
             self._attributes["preMarket"] = False
 
-        if (
-            dt.as_utc(
-                dt.parse_datetime(
-                    resp["equity"]["EQ"]["sessionHours"]["postMarket"][0]["start"]
+        try:
+
+            if (
+                dt.as_utc(
+                    dt.parse_datetime(
+                        resp["equity"]["EQ"]["sessionHours"]["postMarket"][0]["start"]
+                    )
                 )
-            )
-            < dt.utcnow()
-        ) and (
-            dt.utcnow()
-            < dt.as_utc(
-                dt.parse_datetime(
-                    resp["equity"]["EQ"]["sessionHours"]["postMarket"][0]["end"]
+                < dt.utcnow()
+            ) and (
+                dt.utcnow()
+                < dt.as_utc(
+                    dt.parse_datetime(
+                        resp["equity"]["EQ"]["sessionHours"]["postMarket"][0]["end"]
+                    )
                 )
-            )
-        ):
-            self._attributes["postMarket"] = True
-        else:
+            ):
+                self._attributes["postMarket"] = True
+            else:
+                self._attributes["postMarket"] = False
+        except KeyError:
             self._attributes["postMarket"] = False

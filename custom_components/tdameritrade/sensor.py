@@ -3,7 +3,7 @@ import logging
 
 from homeassistant.helpers.entity import Entity
 
-from .const import CONF_ACCOUNTS
+from .const import CONF_ACCOUNTS, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     sensors = []
     for account_id in config.data[CONF_ACCOUNTS]:
         sensors.append(
-            AccountValueSensor(hass.data[DOMAIN][entry.entry_id], account_id)
+            AccountValueSensor(hass.data[DOMAIN][config.entry_id], account_id)
         )
     add_entities(sensors)
     return True

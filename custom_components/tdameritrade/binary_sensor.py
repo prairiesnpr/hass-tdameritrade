@@ -5,6 +5,7 @@ import logging
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.util import dt
 
+from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -12,7 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     """Set up the TDAmeritrade binary sensor platform."""
     sensors = []
-    sensors.append(MarketOpenSensor(hass.data[DOMAIN][entry.entry_id]))
+    sensors.append(MarketOpenSensor(hass.data[DOMAIN][config.entry_id]))
     add_entities(sensors)
     return True
 

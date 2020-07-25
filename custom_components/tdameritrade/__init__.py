@@ -1,5 +1,6 @@
 """The TDAmeritrade integration."""
 import asyncio
+import logging
 
 from tdameritrade_api import AmeritradeAPI
 
@@ -22,6 +23,7 @@ from .const import (
     OAUTH2_TOKEN,
 )
 
+_LOGGER = logging.getLogger(__name__)
 
 # CONFIG_SCHEMA = vol.Schema(
 #    {DOMAIN: vol.Schema({vol.Required(CONF_CONSUMER_KEY): cv.string})},
@@ -31,48 +33,11 @@ from .const import (
 PLATFORMS = ["binary_sensor", "sensor"]
 
 
-# class TDAmeritradeLocalOAuth2Implementation(
-#     config_entry_oauth2_flow.LocalOAuth2Implementation
-# ):
-#     """Local OAuth2 implementation."""
-
-#     async def async_resolve_external_data(self, external_data: Any) -> dict:
-#         """Resolve the authorization code to tokens."""
-#         return await self._token_request(
-#             {
-#                 "grant_type": "authorization_code",
-#                 "code": external_data,
-#                 "redirect_uri": self.redirect_uri,
-#                 "access_type": "offline",
-#             }
-#         )
-
-
-# class TDAmeritradeOAuth(AbstractAuth):
-#     """TDAmeritrade Authentication using OAuth2."""
-
-#     def __init__(
-#         self,
-#         host: str,
-#         websession: ClientSession,
-#         oauth_session: config_entry_oauth2_flow.OAuth2Session,
-#     ):
-#         """Initialize TDA auth."""
-#         super().__init__(websession, host)
-#         self._oauth_session = oauth_session
-
-#     async def async_get_access_token(self):
-#         """Return a valid access token."""
-#         if not self._oauth_session.valid_token:
-#             await self._oauth_session.async_ensure_token_valid()
-
-#         return self._oauth_session.token["access_token"]
-
-
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the TDAmeritrade component."""
 
     if DOMAIN not in config:
+        _LOGGER.warning(f("{DOMAIN} not in config."))
         return True
 
     if CONF_CLIENT_ID in config[DOMAIN]:
@@ -87,18 +52,6 @@ async def async_setup(hass: HomeAssistant, config: dict):
                 OAUTH2_TOKEN,
             ),
         )
-
-    # config_flow.OAuth2FlowHandler.async_register_implementation(
-    #     hass,
-    #     TDAmeritradeLocalOAuth2Implementation(
-    #         hass,
-    #         DOMAIN,
-    #         config[DOMAIN][CONF_CONSUMER_KEY],
-    #         None,
-    #         OAUTH2_AUTHORIZE,
-    #         OAUTH2_TOKEN,
-    #     ),
-    # )
 
     return True
 

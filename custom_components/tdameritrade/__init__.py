@@ -37,7 +37,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the TDAmeritrade component."""
 
     if DOMAIN not in config:
-        _LOGGER.warning(f("{DOMAIN} not in config."))
+        _LOGGER.warning(f"{DOMAIN} not in config.")
         return True
 
     if CONF_CLIENT_ID in config[DOMAIN]:

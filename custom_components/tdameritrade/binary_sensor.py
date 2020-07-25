@@ -2,7 +2,7 @@
 
 import logging
 
-from homeassistant.components.binary_sensor import BinarySensorDevice
+from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.util import dt
 
 
@@ -17,7 +17,7 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     return True
 
 
-class MarketOpenSensor(BinarySensorDevice):
+class MarketOpenSensor(BinarySensorEntity):
     """Representation of a Sensor."""
 
     def __init__(self, client):

@@ -56,7 +56,11 @@ class MarketOpenSensor(BinarySensorEntity):
     async def async_update(self):
         """Update the state of this sensor (Market Open)."""
 
-        resp = await self._client.async_get_market_hours("EQUITY")
+        auth = config_flow.TDAmeritradeOAuth(TDA_URL, websession, oauth_session)
+
+        tda_api = AmeritradeAPI(auth)
+
+        resp = await tda_api.async_get_market_hours("EQUITY")
         try:
             if (
                 dt.as_utc(

@@ -12,7 +12,9 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     """Set up the TDAmeritrade binary sensor platform."""
     sensors = []
     for account_id in config.data[CONF_ACCOUNTS]:
-        sensors.append(AccountValueSensor(hass.data[config.entry_id], account_id))
+        sensors.append(
+            AccountValueSensor(hass.data[DOMAIN][entry.entry_id], account_id)
+        )
     add_entities(sensors)
     return True
 

@@ -25,7 +25,7 @@ class AccountValueSensor(Entity):
     def __init__(self, client, account_id):
         """Initialize of a account sensor."""
         self._name = "Available Funds"
-        self._client = client
+        self._client = client["td_api"]
         self.account_id = account_id
         self.current_value = None
         self.units = None
@@ -60,11 +60,8 @@ class AccountValueSensor(Entity):
     async def async_update(self):
         """Update the state from the sensor."""
         _LOGGER.debug("Updating sensor: %s", self._name)
-        auth = config_flow.TDAmeritradeOAuth(TDA_URL, websession, oauth_session)
 
-        tda_api = AmeritradeAPI(auth)
-
-        resp = await tda_api.async_get_account(self.account_id)
+        resp = await self._client.async_get_account(self.account_id)
 
         self._attributes = resp["securitiesAccount"]
         if resp["securitiesAccount"]["type"] == "MARGIN":

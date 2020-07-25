@@ -129,7 +129,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.services.async_register(DOMAIN, "get_quote", get_quote_service)
 
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = {"TEST": "Test Entry"}
+    hass.data[DOMAIN][entry.entry_id] = {"TEST": "Test Entry", "td_api": tda_api}
 
     for component in PLATFORMS:
         hass.async_create_task(

@@ -60,7 +60,12 @@ class AccountValueSensor(Entity):
     async def async_update(self):
         """Update the state from the sensor."""
         _LOGGER.debug("Updating sensor: %s", self._name)
-        resp = await self._client.async_get_account(self.account_id)
+        auth = config_flow.TDAmeritradeOAuth(TDA_URL, websession, oauth_session)
+
+        tda_api = AmeritradeAPI(auth)
+
+        resp = await tda_api.async_get_account(self.account_id)
+
         self._attributes = resp["securitiesAccount"]
         if resp["securitiesAccount"]["type"] == "MARGIN":
             self.current_value = resp["securitiesAccount"]["currentBalances"][

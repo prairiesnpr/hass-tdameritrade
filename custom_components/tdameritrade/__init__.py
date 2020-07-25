@@ -114,7 +114,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.services.async_register(DOMAIN, "place_order", place_order_service)
     hass.services.async_register(DOMAIN, "get_quote", get_quote_service)
 
-    hass.data[entry.entry_id] = tda_api
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][entry.entry_id] = tda_api
+
     for component in PLATFORMS:
         hass.async_create_task(
             hass.config_entries.async_forward_entry_setup(entry, component)

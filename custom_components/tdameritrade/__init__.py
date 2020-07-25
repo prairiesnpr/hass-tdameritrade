@@ -3,6 +3,7 @@ import asyncio
 
 from tdameritrade_api import AmeritradeAPI
 
+from homeassistant.const import ATTR_CREDENTIALS, CONF_CLIENT_ID, CONF_CLIENT_SECRET
 
 from homeassistant.config_entries import ConfigEntry
 
@@ -16,6 +17,9 @@ from . import config_flow
 from .const import (
     DOMAIN,
     TDA_URL,
+    CONF_CONSUMER_KEY,
+    OAUTH2_AUTHORIZE,
+    OAUTH2_TOKEN,
 )
 
 
@@ -67,10 +71,22 @@ PLATFORMS = ["binary_sensor", "sensor"]
 
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the TDAmeritrade component."""
-    # hass.data[DOMAIN] = {}
 
-    # if DOMAIN not in config:
-    #    return
+    if DOMAIN not in config:
+        return True
+
+    if CONF_CLIENT_ID in config[DOMAIN]:
+        config_flow.TDAmeritradeFlowHandler.async_register_implementation(
+            hass,
+            config_flow.TDAmeritradeLocalOAuth2Implementation(
+                hass,
+                DOMAIN,
+                config[DOMAIN][CONF_CONSUMER_KEY],
+                None,
+                OAUTH2_AUTHORIZE,
+                OAUTH2_TOKEN,
+            ),
+        )
 
     # config_flow.OAuth2FlowHandler.async_register_implementation(
     #     hass,

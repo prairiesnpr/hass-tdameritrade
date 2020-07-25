@@ -7,6 +7,7 @@ from homeassistant import config_entries
 from homeassistant.helpers import config_entry_oauth2_flow
 from homeassistant.core import callback
 from tdameritrade_api import AbstractAuth
+
 from aiohttp import ClientSession
 from typing import Any
 
@@ -117,7 +118,6 @@ class TDAmeritradeFlowHandler(
 
         Ok to override if you want to provide extra info.
         """
-        _LOGGER.warning(data)
         data[CONF_CONSUMER_KEY] = self.consumer_key
         data[CONF_ACCOUNTS] = self.accounts
         return self.async_create_entry(title=TITLE, data=data)

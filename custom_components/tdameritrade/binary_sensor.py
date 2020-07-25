@@ -25,7 +25,7 @@ class MarketOpenSensor(BinarySensorEntity):
         """Initialize of a market binary sensor."""
         self._state = None
         self._name = "Market"
-        self._client = client
+        self._client = client["td_api"]
         self._attributes = {"preMarket": False, "postMarket": False}
 
     @property
@@ -56,11 +56,7 @@ class MarketOpenSensor(BinarySensorEntity):
     async def async_update(self):
         """Update the state of this sensor (Market Open)."""
 
-        auth = config_flow.TDAmeritradeOAuth(TDA_URL, websession, oauth_session)
-
-        tda_api = AmeritradeAPI(auth)
-
-        resp = await tda_api.async_get_market_hours("EQUITY")
+        resp = await self._client.async_get_market_hours("EQUITY")
         try:
             if (
                 dt.as_utc(

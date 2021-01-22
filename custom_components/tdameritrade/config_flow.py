@@ -1,14 +1,14 @@
 """Config flow for TDAmeritrade."""
-import logging
 
+import logging
 import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.helpers import config_entry_oauth2_flow
-from homeassistant.core import callback
 from tdameritrade_api import AbstractAuth
 
-from aiohttp import ClientSession
+from homeassistant.core import callback
+
 from typing import Any
 
 from .const import (
@@ -21,12 +21,7 @@ from .const import (
 )
 
 
-_LOGGER = logging.getLogger(__name__)
-
-
-class TDAmeritradeLocalOAuth2Implementation(
-    config_entry_oauth2_flow.LocalOAuth2Implementation
-):
+class LocalOAuth2Implementation(config_entry_oauth2_flow.LocalOAuth2Implementation):
     """Local OAuth2 implementation."""
 
     async def async_resolve_external_data(self, external_data: Any) -> dict:
@@ -34,35 +29,14 @@ class TDAmeritradeLocalOAuth2Implementation(
         return await self._token_request(
             {
                 "grant_type": "authorization_code",
-                "code": external_data,
+                "code": external_data["code"],
                 "redirect_uri": self.redirect_uri,
                 "access_type": "offline",
             }
         )
 
 
-class TDAmeritradeOAuth(AbstractAuth):
-    """TDAmeritrade Authentication using OAuth2."""
-
-    def __init__(
-        self,
-        host: str,
-        websession: ClientSession,
-        oauth_session: config_entry_oauth2_flow.OAuth2Session,
-    ):
-        """Initialize TDA auth."""
-        super().__init__(websession, host)
-        self._oauth_session = oauth_session
-
-    async def async_get_access_token(self):
-        """Return a valid access token."""
-        if not self._oauth_session.valid_token:
-            await self._oauth_session.async_ensure_token_valid()
-
-        return self._oauth_session.token["access_token"]
-
-
-class TDAmeritradeFlowHandler(
+class OAuth2FlowHandler(
     config_entry_oauth2_flow.AbstractOAuth2FlowHandler, domain=DOMAIN
 ):
     """Config flow to handle TDAmeritrade OAuth2 authentication."""
@@ -83,15 +57,19 @@ class TDAmeritradeFlowHandler(
 
     async def async_step_user(self, user_input=None):
         """Handle a flow started by a user."""
+        await self.async_set_unique_id(DOMAIN)
+
+        if self._async_current_entries():
+            return self.async_abort(reason="single_instance_allowed")
+
         if user_input:
             self.consumer_key = user_input[CONF_CONSUMER_KEY]
             self.accounts = user_input[CONF_ACCOUNTS]
-            if not isinstance(self.accounts, list):
+            if self.accounts and not isinstance(self.accounts, list):
                 self.accounts = [x.strip() for x in self.accounts.split(",")]
-
-            TDAmeritradeFlowHandler.async_register_implementation(
+            OAuth2FlowHandler.async_register_implementation(
                 self.hass,
-                TDAmeritradeLocalOAuth2Implementation(
+                LocalOAuth2Implementation(
                     self.hass,
                     DOMAIN,
                     self.consumer_key,
@@ -100,8 +78,9 @@ class TDAmeritradeFlowHandler(
                     OAUTH2_TOKEN,
                 ),
             )
-
-            return await self.async_step_pick_implementation()
+            implementations = await config_entry_oauth2_flow.async_get_implementations(self.hass, self.DOMAIN)
+            self.flow_impl = implementations[DOMAIN]
+            return await self.async_step_auth()
 
         return self.async_show_form(
             step_id="user",
@@ -120,7 +99,7 @@ class TDAmeritradeFlowHandler(
         """
         data[CONF_CONSUMER_KEY] = self.consumer_key
         data[CONF_ACCOUNTS] = self.accounts
-        return self.async_create_entry(title=TITLE, data=data)
+        return self.async_create_entry(title=self.flow_impl.name, data=data)
 
     @staticmethod
     @callback
@@ -142,7 +121,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input is not None:
             # Preserve existing options, for example *_from_yaml markers
-            _LOGGER.warning(self.config_entry)
             data = {**self.config_entry[CONF_ACCOUNTS], **user_input}
             if not isinstance(data[CONF_ACCOUNTS], list):
                 data[CONF_ACCOUNTS] = [

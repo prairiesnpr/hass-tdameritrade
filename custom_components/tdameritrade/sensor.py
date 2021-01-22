@@ -13,7 +13,7 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     sensors = []
     for account_id in config.data[CONF_ACCOUNTS]:
         sensors.append(
-            AccountValueSensor(hass.data[DOMAIN][config.entry_id], account_id)
+            AccountValueSensor(hass.data[DOMAIN][config.entry_id]["client"], account_id)
         )
     add_entities(sensors)
     return True
@@ -25,7 +25,7 @@ class AccountValueSensor(Entity):
     def __init__(self, client, account_id):
         """Initialize of a account sensor."""
         self._name = "Available Funds"
-        self._client = client["td_api"]
+        self._client = client
         self.account_id = account_id
         self.current_value = None
         self.units = None

@@ -3,10 +3,16 @@
   "name": "TDAmeritrade",
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/tdameritrade",
-  "requirements": ["tdameritrade-api==0.0.1"],
+  "requirements": [
+    "tdameritrade-api==0.0.1"
+  ],
   "ssdp": [],
   "zeroconf": [],
   "homekit": {},
-  "dependencies": [],
-  "codeowners": ["@PrairieSnpr"]
+  "dependencies": [
+    "http"
+  ],
+  "codeowners": [
+    "@PrairieSnpr"
+  ]
 }

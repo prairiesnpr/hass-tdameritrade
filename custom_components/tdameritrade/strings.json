@@ -1,12 +1,8 @@
 {
   "config": {
-    "title": "TDAmeritrade",
     "step": {
-      "pick_implementation": {
-        "title": "Pick Authentication Method"
-      },
       "user": {
-        "title": "Set Consumer Key and Choose Accounts",
+        "title": "Authenticate with TDAmeritrade",
         "data": {
           "accounts": "Accounts",
           "consumer_key": "Consumer Key"
@@ -31,3 +27,5 @@
     }
   }
 }
+
+

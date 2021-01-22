@@ -1,19 +1,15 @@
 """Platform for Market open sensor."""
 
-import logging
-
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.util import dt
 
 from .const import DOMAIN
 
-_LOGGER = logging.getLogger(__name__)
-
 
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     """Set up the TDAmeritrade binary sensor platform."""
     sensors = []
-    sensors.append(MarketOpenSensor(hass.data[DOMAIN][config.entry_id]))
+    sensors.append(MarketOpenSensor(hass.data[DOMAIN][config.entry_id]["client"]))
     add_entities(sensors)
     return True
 
@@ -25,7 +21,7 @@ class MarketOpenSensor(BinarySensorEntity):
         """Initialize of a market binary sensor."""
         self._state = None
         self._name = "Market"
-        self._client = client["td_api"]
+        self._client = client
         self._attributes = {"preMarket": False, "postMarket": False}
 
     @property

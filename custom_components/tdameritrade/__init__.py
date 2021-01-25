@@ -140,17 +140,22 @@ async def options_update_listener(hass, config_entry):
     await hass.config_entries.async_reload(config_entry.entry_id)
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
+async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Unload a config entry."""
-    unload_ok = all(
-        await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_unload(entry, component)
-                for component in PLATFORMS
-            ]
-        )
-    )
-    if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
 
-    return unload_ok
+    if config_entry.state == "loaded":
+        unload_ok = all(
+            await asyncio.gather(
+                *[
+                    hass.config_entries.async_forward_entry_unload(
+                        config_entry,
+                        component
+                    )
+                    for component in PLATFORMS
+                ]
+            )
+        )
+        if unload_ok:
+            hass.data[DOMAIN].pop(config_entry.entry_id)
+            return unload_ok
+    return False

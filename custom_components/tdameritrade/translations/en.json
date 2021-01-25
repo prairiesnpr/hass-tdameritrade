@@ -12,7 +12,7 @@
                     "accounts": "Accounts",
                     "consumer_key": "Consumer Key"
                 },
-                "description": "Account numbers must be seperated wuth commas",
+                "description": "Account numbers must be seperated with commas",
                 "title": "Authenticate with TDAmeritrade"
             }
         }

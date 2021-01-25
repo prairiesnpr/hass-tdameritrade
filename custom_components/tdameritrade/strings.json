@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Authenticate with TDAmeritrade",
-        "description": "Account numbers must be seperated wuth commas",
+        "description": "Account numbers must be seperated with commas",
         "data": {
           "accounts": "Accounts",
           "consumer_key": "Consumer Key"

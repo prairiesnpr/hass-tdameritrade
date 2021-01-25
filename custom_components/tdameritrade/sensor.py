@@ -2,8 +2,11 @@
 import logging
 
 from homeassistant.helpers.entity import Entity
+from datetime import timedelta
 
 from .const import CONF_ACCOUNTS, DOMAIN
+
+SCAN_INTERVAL = timedelta(seconds=30)
 
 _LOGGER = logging.getLogger(__name__)
 

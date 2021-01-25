@@ -3,8 +3,11 @@
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.util import dt
 
+from datetime import timedelta
+
 from .const import DOMAIN
 
+SCAN_INTERVAL = timedelta(seconds=120)
 
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     """Set up the TDAmeritrade binary sensor platform."""

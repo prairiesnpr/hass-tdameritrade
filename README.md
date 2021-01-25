@@ -2,7 +2,7 @@
 TDAmeritrade component for Home Assistant
 
 # Requirements
-In order to use this component, you must register for a [devloper](https://developer.tdameritrade.com/) account with TDAmeritrade.
+In order to use this component, you must register for a [developer](https://developer.tdameritrade.com/) account with TDAmeritrade.
 
 Once registered add a new app.  Ensure that you configure the callback URL as such. 
 

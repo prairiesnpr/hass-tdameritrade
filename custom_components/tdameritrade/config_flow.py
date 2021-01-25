@@ -5,9 +5,11 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.helpers import config_entry_oauth2_flow
-from tdameritrade_api import AbstractAuth
-
 from homeassistant.core import callback
+
+from tdameritrade_api import AbstractAuth
+from copy import deepcopy
+
 
 from typing import Any
 
@@ -66,7 +68,7 @@ class OAuth2FlowHandler(
             self.consumer_key = user_input[CONF_CONSUMER_KEY]
             self.accounts = user_input[CONF_ACCOUNTS]
             if self.accounts and not isinstance(self.accounts, list):
-                self.accounts = [x.strip() for x in self.accounts.split(",")]
+                self.accounts = [x.strip() for x in self.accounts.split(",") if x]
             OAuth2FlowHandler.async_register_implementation(
                 self.hass,
                 LocalOAuth2Implementation(
@@ -78,7 +80,9 @@ class OAuth2FlowHandler(
                     OAUTH2_TOKEN,
                 ),
             )
-            implementations = await config_entry_oauth2_flow.async_get_implementations(self.hass, self.DOMAIN)
+            implementations = await config_entry_oauth2_flow.async_get_implementations(
+                self.hass, self.DOMAIN
+            )
             self.flow_impl = implementations[DOMAIN]
             return await self.async_step_auth()
 
@@ -99,7 +103,7 @@ class OAuth2FlowHandler(
         """
         data[CONF_CONSUMER_KEY] = self.consumer_key
         data[CONF_ACCOUNTS] = self.accounts
-        return self.async_create_entry(title=self.flow_impl.name, data=data)
+        return self.async_create_entry(title=TITLE, data=data)
 
     @staticmethod
     @callback
@@ -114,26 +118,31 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry):
         """Initialize options flow."""
         self.config_entry = config_entry
+        if self.config_entry.options:
+            self.accounts = deepcopy(self.config_entry.options[CONF_ACCOUNTS])
+        else:
+            self.accounts = deepcopy(self.config_entry.data[CONF_ACCOUNTS])
 
-    async def async_step_tda_settings(self, user_input=None):
-        """Handle options flow."""
-        # Accounts are persisted as a list, but handled as comma separated string in UI
-
-        if user_input is not None:
-            # Preserve existing options, for example *_from_yaml markers
-            data = {**self.config_entry[CONF_ACCOUNTS], **user_input}
-            if not isinstance(data[CONF_ACCOUNTS], list):
-                data[CONF_ACCOUNTS] = [
-                    x.strip() for x in data[CONF_ACCOUNTS].split(",")
+    async def async_step_init(self, user_input=None):
+        """Update the accounts."""
+        if user_input:
+            if user_input.get(CONF_ACCOUNTS):
+                old_accounts = self.accounts
+                self.accounts = [
+                    x.strip() for x in user_input[CONF_ACCOUNTS].split(",") if x
                 ]
-            return self.async_create_entry(title=TITLE, data=data)
+            return await self._update_accounts()
 
         data_schema = vol.Schema(
             {
                 vol.Optional(
                     CONF_ACCOUNTS,
-                    default=", ".join(self.config_entry.options.get(CONF_ACCOUNTS, [])),
+                    default=",".join(self.accounts),
                 ): str,
             }
         )
-        return self.async_show_form(step_id="tda_settings", data_schema=data_schema)
+        return self.async_show_form(step_id="init", data_schema=data_schema)
+
+    async def _update_accounts(self):
+        """Update config entry options."""
+        return self.async_create_entry(title="", data={CONF_ACCOUNTS: self.accounts})

@@ -121,8 +121,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.services.async_register(DOMAIN, "get_quote", get_quote_service)
 
     hass.data.setdefault(DOMAIN, {})
-
-    hass.data[DOMAIN][entry.entry_id] = {"client": AmeritradeAPI(auth)}
+    hass_data = dict(entry.data)
+    unsub_options_update_listener = entry.add_update_listener(options_update_listener)
+    hass_data["unsub_options_update_listener"] = unsub_options_update_listener
+    hass_data["client"] = AmeritradeAPI(auth)
+    hass.data[DOMAIN][entry.entry_id] = hass_data
 
     for component in PLATFORMS:
         hass.async_create_task(
@@ -130,6 +133,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
 
     return True
+
+
+async def options_update_listener(hass, config_entry):
+    """Handle options update."""
+    await hass.config_entries.async_reload(config_entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):

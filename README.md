@@ -13,7 +13,7 @@ Note: The callback URL must be https, http is not supported.
 # Installation
 Clone the repo and copy the tdameritrade folder to custom_components or use [HACS](https://github.com/hacs/integration)
 
-#Configuration
+# Configuration
 
 Add the following to configuration.yaml
 

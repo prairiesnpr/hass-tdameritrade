@@ -15,18 +15,11 @@ Clone the repo and copy the tdameritrade folder to custom_components or use [HAC
 
 # Configuration
 
-Add the following to configuration.yaml
-
-```
-tdameritrade:
-  consumer_key: YOUR CONSUMER KEY
-```
-
 In the UI select Configuration > Integrations > Add.
 
 In the list choose TDAmeritrade.
 
-You will be prompted to authenticate with TDAmeritrade, this requests and offline token and will be good for 90 days.
+You will be prompted to authenticate with TDAmeritrade, this requests an offline token and will be good for 90 days.
 
 Once authenticated, select the TDAmeritrade integration and select settings.
 

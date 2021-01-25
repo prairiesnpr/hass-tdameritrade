@@ -1,5 +1,6 @@
 """The TDAmeritrade integration."""
 import asyncio
+import logging
 
 import voluptuous as vol
 
@@ -37,6 +38,8 @@ CONFIG_SCHEMA = vol.Schema(
 
 PLATFORMS = ["binary_sensor", "sensor"]
 
+_LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the TDAmeritrade component."""
@@ -69,7 +72,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
     )
 
-    session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
+    session = config_entry_oauth2_flow.OAuth2Session(
+        hass, entry, implementation
+    )
 
     auth = api.AsyncConfigEntryAuth(
         aiohttp_client.async_get_clientsession(hass), session
@@ -122,7 +127,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
-    unsub_options_update_listener = entry.add_update_listener(options_update_listener)
+    unsub_options_update_listener = entry.add_update_listener(
+        options_update_listener
+    )
     hass_data["unsub_options_update_listener"] = unsub_options_update_listener
     hass_data["client"] = AmeritradeAPI(auth)
     hass.data[DOMAIN][entry.entry_id] = hass_data
@@ -142,20 +149,27 @@ async def options_update_listener(hass, config_entry):
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Unload a config entry."""
-
+    _LOGGER.debug("Unload Requested")
     if config_entry.state == "loaded":
-        unload_ok = all(
-            await asyncio.gather(
+        try:
+            unload_res = await asyncio.gather(
                 *[
                     hass.config_entries.async_forward_entry_unload(
                         config_entry,
                         component
                     )
                     for component in PLATFORMS
-                ]
+                ],
+                return_exceptions=True
             )
-        )
-        if unload_ok:
-            hass.data[DOMAIN].pop(config_entry.entry_id)
-            return unload_ok
-    return False
+            unload_ok = all(unload_res)
+            if unload_ok:
+                hass.data[DOMAIN].pop(config_entry.entry_id)
+                _LOGGER.debug("Unload Completed")
+                return True
+            _LOGGER.debug("Failed to Unload: %s", unload_res)
+        except ValueError:
+            _LOGGER.debug("Unload Failed with ValueError")
+        return False
+    _LOGGER.debug("Config entry not loaded")
+    return True

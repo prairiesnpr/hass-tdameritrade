@@ -3,6 +3,7 @@ import logging
 
 from homeassistant.helpers.entity import Entity
 from datetime import timedelta
+from aiohttp.client_exceptions import ClientConnectorError
 
 from .const import CONF_ACCOUNTS, DOMAIN
 
@@ -68,17 +69,20 @@ class AccountValueSensor(Entity):
     async def async_update(self):
         """Update the state from the sensor."""
         _LOGGER.debug("Updating sensor: %s", self._name)
-
-        resp = await self._client.async_get_account(self.account_id)
-
-        self._attributes = resp["securitiesAccount"]
-        if resp["securitiesAccount"]["type"] == "MARGIN":
-            self.current_value = resp["securitiesAccount"]["currentBalances"][
-                "availableFunds"
-            ]
-        elif resp["securitiesAccount"]["type"] == "CASH":
-            self.current_value = resp["securitiesAccount"]["currentBalances"][
-                "cashAvailableForTrading"
-            ]
-        else:
-            self.current_value = 0.00
+        resp = None
+        try:
+            resp = await self._client.async_get_account(self.account_id)
+        except ClientConnectorError as error:
+            _LOGGER.warning("Client Exception: %s", error)
+        if resp:
+            self._attributes = resp["securitiesAccount"]
+            if resp["securitiesAccount"]["type"] == "MARGIN":
+                self.current_value = resp["securitiesAccount"]["currentBalances"][
+                    "availableFunds"
+                ]
+            elif resp["securitiesAccount"]["type"] == "CASH":
+                self.current_value = resp["securitiesAccount"]["currentBalances"][
+                    "cashAvailableForTrading"
+                ]
+            else:
+                self.current_value = 0.00

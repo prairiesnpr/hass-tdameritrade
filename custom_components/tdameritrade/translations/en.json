@@ -12,17 +12,19 @@
                     "accounts": "Accounts",
                     "consumer_key": "Consumer Key"
                 },
+                "description": "Account numbers must be seperated wuth commas",
                 "title": "Authenticate with TDAmeritrade"
             }
         }
     },
     "options": {
         "step": {
-            "tda_settings": {
+            "init": {
                 "data": {
                     "accounts": "Accounts"
                 },
-                "description": "Options for TDAmeritrade"
+                "description": "Configure Accounts, Use commas to seperate entries",
+                "title": "TDAmeritrade Options"
             }
         }
     }

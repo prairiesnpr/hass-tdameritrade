@@ -8,14 +8,19 @@ from .const import CONF_ACCOUNTS, DOMAIN
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, config, add_entities, discovery_info=None):
+async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the TDAmeritrade binary sensor platform."""
+    config = hass.data[DOMAIN][config_entry.entry_id]
+    if config_entry.options:
+        config.update(config_entry.options)
+    if config_entry.options:
+        accounts = config_entry.options[CONF_ACCOUNTS]
+    else:
+        accounts = config_entry.data[CONF_ACCOUNTS]
     sensors = []
-    for account_id in config.data[CONF_ACCOUNTS]:
-        sensors.append(
-            AccountValueSensor(hass.data[DOMAIN][config.entry_id]["client"], account_id)
-        )
-    add_entities(sensors)
+    for account_id in accounts:
+        sensors.append(AccountValueSensor(config["client"], account_id))
+    async_add_entities(sensors, update_before_add=True)
     return True
 
 

@@ -1,0 +1,7 @@
+{
+    "name": "TDAmeritrade",
+    "country": "US",
+    "domains": ["binary_sensor", "sensor"],
+    "homeassistant": "2021.1.4",
+    "iot_class": ["Cloud Polling"]
+  }

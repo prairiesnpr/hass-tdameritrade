@@ -20,6 +20,7 @@ async def async_setup_entry(hass, config, async_add_entities, discovery_info=Non
     """Set up the TDAmeritrade binary sensor platform."""
     sensors = []
     sensors.append(MarketOpenSensor(hass.data[DOMAIN][config.entry_id]["client"]))
+    sensors = [entity for entity in sensors if not hass.states.get("binary_sensor.market")]
     async_add_entities(sensors)
     return True
 
@@ -34,7 +35,6 @@ class MarketOpenSensor(BinarySensorEntity):
         self._client = client
         self._attributes = {PRE_MARKET: None, POST_MARKET: None}
         self._available = False
-        self._unique_id = "market_open"
 
     @property
     def device_class(self):
@@ -49,7 +49,12 @@ class MarketOpenSensor(BinarySensorEntity):
     @property
     def unique_id(self):
         """Return the unique_id of the binary sensor."""
-        return self._unique_id
+        return f"{DOMAIN}.market_open_sensor"
+
+    @property
+    def available(self):
+        """Return the availability of the binary sensor."""
+        return self._available
 
     @property
     def is_on(self):
@@ -92,7 +97,7 @@ class MarketOpenSensor(BinarySensorEntity):
 
     async def async_update(self):
         """Update the state of this sensor (Market Open)."""
-        _LOGGER.debug("Updating sensor: %s", self._name)
+        _LOGGER.debug("Updating sensor: %s, id: %s", self._name, self.entity_id)
         resp = None
         try:
             resp = await self._client.async_get_market_hours("EQUITY")

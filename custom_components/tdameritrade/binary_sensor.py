@@ -65,7 +65,7 @@ class MarketOpenSensor(BinarySensorEntity):
             try:
                 market_open = dt.parse_datetime(resp["equity"]["EQ"]["sessionHours"][market][0]["start"])
                 market_close = dt.parse_datetime(resp["equity"]["EQ"]["sessionHours"][market][0]["end"])
-                market_state = market_open < dt.now() and dt.now() > market_close
+                market_state = market_open < dt.now() and dt.now() < market_close
                 _LOGGER.debug(
                     "%s Market Open: %s, Close: %s, Current Time: %s, Market Open: %s",
                     market,

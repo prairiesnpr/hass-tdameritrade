@@ -147,7 +147,10 @@ async def options_update_listener(hass, config_entry):
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Unload a config entry."""
     _LOGGER.debug("Unload Requested")
-    hass.data[DOMAIN][config_entry.entry_id]["unsub"]()
+    try:
+        hass.data[DOMAIN][config_entry.entry_id]["unsub"]()
+    except ValueError:
+        pass
     unload_res = await asyncio.gather(
         *[
             hass.config_entries.async_forward_entry_unload(

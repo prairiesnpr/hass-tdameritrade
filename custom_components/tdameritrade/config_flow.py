@@ -7,7 +7,6 @@ from homeassistant import config_entries
 from homeassistant.helpers import config_entry_oauth2_flow
 from homeassistant.core import callback
 
-from tdameritrade_api import AbstractAuth
 from copy import deepcopy
 
 
@@ -127,7 +126,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """Update the accounts."""
         if user_input:
             if user_input.get(CONF_ACCOUNTS):
-                old_accounts = self.accounts
                 self.accounts = [
                     x.strip() for x in user_input[CONF_ACCOUNTS].split(",") if x
                 ]

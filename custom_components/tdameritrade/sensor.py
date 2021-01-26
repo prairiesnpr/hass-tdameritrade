@@ -7,7 +7,7 @@ from aiohttp.client_exceptions import ClientConnectorError
 
 from .const import CONF_ACCOUNTS, DOMAIN
 
-SCAN_INTERVAL = timedelta(seconds=30)
+SCAN_INTERVAL = timedelta(seconds=10)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,6 +40,7 @@ class AccountValueSensor(Entity):
         self.units = None
         self.last_changed_time = None
         self._attributes = {}
+        self._available = False
 
     @property
     def state(self):
@@ -75,6 +76,7 @@ class AccountValueSensor(Entity):
         except ClientConnectorError as error:
             _LOGGER.warning("Client Exception: %s", error)
         if resp:
+            self._available = True
             self._attributes = resp["securitiesAccount"]
             if resp["securitiesAccount"]["type"] == "MARGIN":
                 self.current_value = resp["securitiesAccount"]["currentBalances"][
@@ -86,3 +88,5 @@ class AccountValueSensor(Entity):
                 ]
             else:
                 self.current_value = 0.00
+        else:
+            self._available = False

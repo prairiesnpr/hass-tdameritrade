@@ -53,7 +53,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up TDAmeritrade from a config entry."""
-
+    _LOGGER.debug("Setting up entry")
     config_flow.OAuth2FlowHandler.async_register_implementation(
         hass,
         config_entry_oauth2_flow.LocalOAuth2Implementation(
@@ -72,9 +72,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
     )
 
-    session = config_entry_oauth2_flow.OAuth2Session(
-        hass, entry, implementation
-    )
+    session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
 
     auth = api.AsyncConfigEntryAuth(
         aiohttp_client.async_get_clientsession(hass), session
@@ -121,24 +119,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
 
         return True
-
+    _LOGGER.debug("Registering Services")
     hass.services.async_register(DOMAIN, "place_order", place_order_service)
     hass.services.async_register(DOMAIN, "get_quote", get_quote_service)
 
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
-    unsub_options_update_listener = entry.add_update_listener(
-        options_update_listener
-    )
-    hass_data["unsub_options_update_listener"] = unsub_options_update_listener
+    entry.update_listeners = []
+    entry.add_update_listener(options_update_listener)
     hass_data["client"] = AmeritradeAPI(auth)
     hass.data[DOMAIN][entry.entry_id] = hass_data
-
-    for component in PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, component)
-        )
-
+    if entry.state not in ["loaded", "unload-started"]:
+        for component in PLATFORMS:
+            _LOGGER.debug("Setting up %s component", component)
+            hass.async_create_task(
+                hass.config_entries.async_forward_entry_setup(entry, component)
+            )
     return True
 
 
@@ -147,29 +143,40 @@ async def options_update_listener(hass, config_entry):
     await hass.config_entries.async_reload(config_entry.entry_id)
 
 
+async def async_forward_entry_unload(hass, config_entry, component):
+    """Forward the unloading of an entry to a different component."""
+    _LOGGER.debug("Removing %s", component)
+    try:
+        return await hass.config_entries.async_forward_entry_unload(
+            config_entry,
+            component
+        )
+    except ValueError:
+        _LOGGER.debug("Failed to unload entry")
+        return False
+
+
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Unload a config entry."""
     _LOGGER.debug("Unload Requested")
     if config_entry.state == "loaded":
-        try:
-            unload_res = await asyncio.gather(
-                *[
-                    hass.config_entries.async_forward_entry_unload(
-                        config_entry,
-                        component
-                    )
-                    for component in PLATFORMS
-                ],
-                return_exceptions=True
-            )
-            unload_ok = all(unload_res)
-            if unload_ok:
-                hass.data[DOMAIN].pop(config_entry.entry_id)
-                _LOGGER.debug("Unload Completed")
-                return True
-            _LOGGER.debug("Failed to Unload: %s", unload_res)
-        except ValueError:
-            _LOGGER.debug("Unload Failed with ValueError")
-        return False
-    _LOGGER.debug("Config entry not loaded")
+        config_entry.state = "unload-started"
+        unload_res = await asyncio.gather(
+            *[
+                async_forward_entry_unload(
+                    hass,
+                    config_entry,
+                    component
+                )
+                for component in PLATFORMS
+            ],
+            return_exceptions=True
+        )
+        unload_ok = all(unload_res)
+        if unload_ok:
+            hass.data[DOMAIN].pop(config_entry.entry_id)
+            _LOGGER.debug("Unload Completed")
+            return True
+        _LOGGER.debug("Failed to Unload: %s", unload_res)
+    _LOGGER.debug("Entry not loaded")
     return True

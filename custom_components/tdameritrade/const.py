@@ -11,3 +11,8 @@ TDA_URL = "https://api.tdameritrade.com/v1"
 
 CONF_CONSUMER_KEY = "consumer_key"
 CONF_ACCOUNTS = "accounts"
+
+# API const
+PRE_MARKET = "preMarket"
+POST_MARKET = "postMarket"
+REG_MARKET = "regMarket"

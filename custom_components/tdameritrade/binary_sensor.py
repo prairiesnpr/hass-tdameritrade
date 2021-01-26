@@ -76,7 +76,7 @@ class MarketOpenSensor(BinarySensorEntity):
                 )
                 return market_state
             except KeyError:
-                _LOGGER.warning("Faild to update '%s' sensor", market)
+                _LOGGER.warning("Failed to update '%s' sensor", market)
                 return None
         return None
 

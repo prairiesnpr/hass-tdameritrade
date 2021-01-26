@@ -126,10 +126,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.data.setdefault(DOMAIN, {})
     hass_data = dict(entry.data)
     entry.update_listeners = []
-    entry.add_update_listener(options_update_listener)
+    hass_data["unsub"] = entry.add_update_listener(options_update_listener)
     hass_data["client"] = AmeritradeAPI(auth)
     hass.data[DOMAIN][entry.entry_id] = hass_data
-    if entry.state not in ["loaded", "unload-started"]:
+    if entry.state == "not_loaded":
         for component in PLATFORMS:
             _LOGGER.debug("Setting up %s component", component)
             hass.async_create_task(
@@ -140,43 +140,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 async def options_update_listener(hass, config_entry):
     """Handle options update."""
+    _LOGGER.debug("Options Updated, reloading.")
     await hass.config_entries.async_reload(config_entry.entry_id)
-
-
-async def async_forward_entry_unload(hass, config_entry, component):
-    """Forward the unloading of an entry to a different component."""
-    _LOGGER.debug("Removing %s", component)
-    try:
-        return await hass.config_entries.async_forward_entry_unload(
-            config_entry,
-            component
-        )
-    except ValueError:
-        _LOGGER.debug("Failed to unload entry")
-        return False
 
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Unload a config entry."""
     _LOGGER.debug("Unload Requested")
-    if config_entry.state == "loaded":
-        config_entry.state = "unload-started"
-        unload_res = await asyncio.gather(
-            *[
-                async_forward_entry_unload(
-                    hass,
-                    config_entry,
-                    component
-                )
-                for component in PLATFORMS
-            ],
-            return_exceptions=True
-        )
-        unload_ok = all(unload_res)
-        if unload_ok:
-            hass.data[DOMAIN].pop(config_entry.entry_id)
-            _LOGGER.debug("Unload Completed")
-            return True
-        _LOGGER.debug("Failed to Unload: %s", unload_res)
-    _LOGGER.debug("Entry not loaded")
-    return True
+    hass.data[DOMAIN][config_entry.entry_id]["unsub"]()
+    unload_res = await asyncio.gather(
+        *[
+            hass.config_entries.async_forward_entry_unload(
+                config_entry,
+                component
+            )
+            for component in PLATFORMS
+        ],
+        return_exceptions=True
+    )
+    unload_ok = all(unload_res)
+    if unload_ok:
+        hass.data[DOMAIN].pop(config_entry.entry_id)
+        _LOGGER.debug("Unload Completed")
+        return True
+    _LOGGER.debug("Failed to Unload: %s", unload_res)
+    return False

@@ -3,7 +3,7 @@ import logging
 
 from homeassistant.helpers.entity import Entity
 from datetime import timedelta
-from aiohttp.client_exceptions import ClientConnectorError
+from aiohttp.client_exceptions import ClientConnectorError, ClientResponseError
 
 from .const import CONF_ACCOUNTS, DOMAIN
 
@@ -73,7 +73,7 @@ class AccountValueSensor(Entity):
         resp = None
         try:
             resp = await self._client.async_get_account(self.account_id)
-        except ClientConnectorError as error:
+        except (ClientConnectorError, ClientResponseError) as error:
             _LOGGER.warning("Client Exception: %s", error)
         if resp:
             self._available = True

@@ -7,7 +7,7 @@ from homeassistant.util import dt
 
 from datetime import timedelta
 
-from aiohttp.client_exceptions import ClientConnectorError
+from aiohttp.client_exceptions import ClientConnectorError, ClientResponseError
 
 from .const import DOMAIN, PRE_MARKET, POST_MARKET, REG_MARKET
 
@@ -63,8 +63,12 @@ class MarketOpenSensor(BinarySensorEntity):
     async def _is_market_open(self, market, resp):
         if resp:
             try:
-                market_open = dt.parse_datetime(resp["equity"]["EQ"]["sessionHours"][market][0]["start"])
-                market_close = dt.parse_datetime(resp["equity"]["EQ"]["sessionHours"][market][0]["end"])
+                market_open = dt.parse_datetime(
+                    resp["equity"]["EQ"]["sessionHours"][market][0]["start"]
+                )
+                market_close = dt.parse_datetime(
+                    resp["equity"]["EQ"]["sessionHours"][market][0]["end"]
+                )
                 market_state = market_open < dt.now() < market_close
                 _LOGGER.debug(
                     "%s Market Open: %s, Close: %s, Current Time: %s, Market Open: %s",
@@ -72,7 +76,7 @@ class MarketOpenSensor(BinarySensorEntity):
                     market_open,
                     market_close,
                     dt.now(),
-                    market_state
+                    market_state,
                 )
                 return market_state
             except KeyError:
@@ -86,8 +90,7 @@ class MarketOpenSensor(BinarySensorEntity):
         resp = None
         try:
             resp = await self._client.async_get_market_hours("EQUITY")
-            _LOGGER.debug("Market Open Resp: %s", resp)
-        except ClientConnectorError as error:
+        except (ClientConnectorError, ClientResponseError) as error:
             _LOGGER.warning("Client Exception: %s", error)
 
         if resp:
@@ -95,9 +98,13 @@ class MarketOpenSensor(BinarySensorEntity):
             market_state = await asyncio.gather(
                 self._is_market_open(REG_MARKET, resp),
                 self._is_market_open(PRE_MARKET, resp),
-                self._is_market_open(POST_MARKET, resp)
+                self._is_market_open(POST_MARKET, resp),
             )
 
-            self._state, self._attributes[PRE_MARKET], self._attributes[POST_MARKET] = market_state
+            (
+                self._state,
+                self._attributes[PRE_MARKET],
+                self._attributes[POST_MARKET],
+            ) = market_state
         else:
             self._available = False

@@ -41,6 +41,7 @@ class AccountValueSensor(Entity):
         self.last_changed_time = None
         self._attributes = {}
         self._available = False
+        self._unique_id = f"{self._name} #--{self.account_id[-4:]}"
 
     @property
     def state(self):
@@ -49,8 +50,13 @@ class AccountValueSensor(Entity):
 
     @property
     def name(self):
-        """Return the name of the binary sensor."""
+        """Return the name of the sensor."""
         return f"{self._name} #--{self.account_id[-4:]}"
+
+    @property
+    def unique_id(self):
+        """Return the unique_id of the sensor."""
+        return self._unique_id
 
     @property
     def unit_of_measurement(self):
@@ -69,7 +75,7 @@ class AccountValueSensor(Entity):
 
     async def async_update(self):
         """Update the state from the sensor."""
-        _LOGGER.debug("Updating sensor: %s", self._name)
+        _LOGGER.debug("Updating sensor: %s", self.name)
         resp = None
         try:
             resp = await self._client.async_get_account(self.account_id)

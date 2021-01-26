@@ -16,11 +16,11 @@ SCAN_INTERVAL = timedelta(seconds=30)
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, config, add_entities, discovery_info=None):
+async def async_setup_entry(hass, config, async_add_entities, discovery_info=None):
     """Set up the TDAmeritrade binary sensor platform."""
     sensors = []
     sensors.append(MarketOpenSensor(hass.data[DOMAIN][config.entry_id]["client"]))
-    add_entities(sensors)
+    async_add_entities(sensors)
     return True
 
 
@@ -34,6 +34,7 @@ class MarketOpenSensor(BinarySensorEntity):
         self._client = client
         self._attributes = {PRE_MARKET: None, POST_MARKET: None}
         self._available = False
+        self._unique_id = "market_open"
 
     @property
     def device_class(self):
@@ -44,6 +45,11 @@ class MarketOpenSensor(BinarySensorEntity):
     def name(self):
         """Return the name of the binary sensor."""
         return self._name
+
+    @property
+    def unique_id(self):
+        """Return the unique_id of the binary sensor."""
+        return self._unique_id
 
     @property
     def is_on(self):

@@ -15,4 +15,4 @@ CONF_ACCOUNTS = "accounts"
 # API const
 PRE_MARKET = "preMarket"
 POST_MARKET = "postMarket"
-REG_MARKET = "regMarket"
+REG_MARKET = "regularMarket"

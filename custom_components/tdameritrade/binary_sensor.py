@@ -20,7 +20,9 @@ async def async_setup_entry(hass, config, async_add_entities, discovery_info=Non
     """Set up the TDAmeritrade binary sensor platform."""
     sensors = []
     sensors.append(MarketOpenSensor(hass.data[DOMAIN][config.entry_id]["client"]))
-    sensors = [entity for entity in sensors if not hass.states.get("binary_sensor.market")]
+    sensors = [
+        entity for entity in sensors if not hass.states.get("binary_sensor.market")
+    ]
     async_add_entities(sensors)
     return True
 
@@ -91,7 +93,11 @@ class MarketOpenSensor(BinarySensorEntity):
                 )
                 return market_state
             except KeyError:
-                _LOGGER.warning("Failed to update '%s' sensor", market)
+                pass
+            try:
+                market_state = resp["equity"]["equity"]["isOpen"]
+            except KeyError:
+                _LOGGER.warning("Failed to update '%s' sensor.", market)
                 return None
         return None
 

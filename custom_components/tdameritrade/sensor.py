@@ -23,8 +23,6 @@ from .const import (
 )
 from homeassistant.const import STATE_OFF, STATE_ON
 
-SCAN_INTERVAL = timedelta(hours=24)
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -63,6 +61,13 @@ class AccountValueSensor(Entity):
         self._last_updated = None
         self._interval = timedelta(seconds=10)
         self._remove_update_interval = None
+        self._should_poll = False
+
+
+    @property
+    def should_poll(self):
+        """Return if this sensor should pull."""
+        return self._should_poll
 
     @property
     def state(self):
@@ -112,6 +117,10 @@ class AccountValueSensor(Entity):
     async def async_added_to_hass(self):
         """Start custom polling."""
         self._remove_update_interval = async_track_time_interval(self.hass, self.async_schedule_update, self._interval)
+
+    async def async_will_remove_from_hass(self):
+        """Stop custom polling."""
+        self._remove_update_interval()
 
     async def async_update(self):
         """Update the state from the sensor."""

@@ -3,11 +3,27 @@ import logging
 
 from homeassistant.helpers.entity import Entity
 from datetime import timedelta
+from homeassistant.core import callback
 from aiohttp.client_exceptions import ClientConnectorError, ClientResponseError
+from homeassistant.helpers.event import async_track_time_interval
 
-from .const import CONF_ACCOUNTS, DOMAIN
+from .const import (
+    CONF_ACCOUNTS,
+    DOMAIN,
+    CLOSED_SCAN_INTERVAL,
+    OPEN_SCAN_INTERVAL,
+    AVAILABLE_FUNDS,
+    CURRENT_BALANCES,
+    SECURITIES_ACCOUNT,
+    CASH_AVAILABLE_FOR_TRADEING,
+    TYPE,
+    MARGIN,
+    CASH,
+    CLIENT,
+)
+from homeassistant.const import STATE_OFF, STATE_ON
 
-SCAN_INTERVAL = timedelta(seconds=10)
+SCAN_INTERVAL = timedelta(hours=24)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,10 +39,12 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         accounts = config_entry.data[CONF_ACCOUNTS]
     sensors = []
     for account_id in accounts:
-        sensors.append(AccountValueSensor(config["client"], account_id))
-    sensors = [entity for entity in sensors if not hass.states.get(
-        f"sensor.available_funds_{entity.account_id[-4:]}"
-    )]
+        sensors.append(AccountValueSensor(config[CLIENT], account_id))
+    sensors = [
+        entity
+        for entity in sensors
+        if not hass.states.get(f"sensor.available_funds_{entity.account_id[-4:]}")
+    ]
     async_add_entities(sensors)
     return True
 
@@ -42,6 +60,9 @@ class AccountValueSensor(Entity):
         self._current_value = None
         self._attributes = {}
         self._available = False
+        self._last_updated = None
+        self._interval = timedelta(seconds=10)
+        self._remove_update_interval = None
 
     @property
     def state(self):
@@ -83,6 +104,15 @@ class AccountValueSensor(Entity):
         """Return the class of this sensor."""
         return "mdi:cash"
 
+    @callback
+    async def async_schedule_update(self, event_time=None):
+        """Update the entity."""
+        self.async_schedule_update_ha_state(True)
+
+    async def async_added_to_hass(self):
+        """Start custom polling."""
+        self._remove_update_interval = async_track_time_interval(self.hass, self.async_schedule_update, self._interval)
+
     async def async_update(self):
         """Update the state from the sensor."""
         _LOGGER.debug("Updating sensor: %s, id: %s", self._name, self.entity_id)
@@ -93,16 +123,39 @@ class AccountValueSensor(Entity):
             _LOGGER.warning("Client Exception: %s", error)
         if resp:
             self._available = True
-            self._attributes = resp["securitiesAccount"]
-            if resp["securitiesAccount"]["type"] == "MARGIN":
-                self._current_value = resp["securitiesAccount"]["currentBalances"][
-                    "availableFunds"
+            self._attributes = resp[SECURITIES_ACCOUNT]
+            if resp[SECURITIES_ACCOUNT][TYPE] == MARGIN:
+                self._current_value = resp[SECURITIES_ACCOUNT][CURRENT_BALANCES][
+                    AVAILABLE_FUNDS
                 ]
-            elif resp["securitiesAccount"]["type"] == "CASH":
-                self._current_value = resp["securitiesAccount"]["currentBalances"][
-                    "cashAvailableForTrading"
+            elif resp[SECURITIES_ACCOUNT][TYPE] == CASH:
+                self._current_value = resp[SECURITIES_ACCOUNT][CURRENT_BALANCES][
+                    CASH_AVAILABLE_FOR_TRADEING
                 ]
             else:
                 self._current_value = 0.00
         else:
             self._available = False
+
+        if (
+            self._interval != timedelta(seconds=CLOSED_SCAN_INTERVAL)
+            and self.hass.states.get("binary_sensor.market").state == STATE_OFF
+        ):
+            _LOGGER.debug(
+                "Market is closed, setting scan inteval to %s minutes.",
+                CLOSED_SCAN_INTERVAL / 60,
+            )
+            self._interval = timedelta(seconds=CLOSED_SCAN_INTERVAL)
+            self._remove_update_interval()
+            self._remove_update_interval = async_track_time_interval(self.hass, self.async_schedule_update, self._interval)
+        elif (
+            self._interval != timedelta(seconds=OPEN_SCAN_INTERVAL)
+            and self.hass.states.get("binary_sensor.market").state == STATE_ON
+        ):
+            _LOGGER.debug(
+                "Market is open, setting scan inteval to %s seconds.",
+                OPEN_SCAN_INTERVAL,
+            )
+            self._interval = timedelta(seconds=OPEN_SCAN_INTERVAL)
+            self._remove_update_interval()
+            self._remove_update_interval = async_track_time_interval(self.hass, self.async_schedule_update, self._interval)

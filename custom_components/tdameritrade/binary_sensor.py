@@ -22,7 +22,6 @@ from .const import (
     SESSION_HOURS,
     IS_OPEN,
     EQUITY_MKT_TYPE,
-
 )
 
 SCAN_INTERVAL = timedelta(seconds=30)
@@ -32,9 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config, async_add_entities, discovery_info=None):
     """Set up the TDAmeritrade binary sensor platform."""
-    sensors = []
-    sensors.append(MarketOpenSensor(hass.data[DOMAIN][config.entry_id][CLIENT]))
-    sensors = [entity for entity in sensors if not hass.states.get("binary_sensor.market")]
+    sensors = [MarketOpenSensor(hass.data[DOMAIN][config.entry_id][CLIENT])]
     async_add_entities(sensors)
     return True
 

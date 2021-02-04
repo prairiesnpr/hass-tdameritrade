@@ -29,19 +29,9 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the TDAmeritrade sensor platform."""
     config = hass.data[DOMAIN][config_entry.entry_id]
-    if config_entry.options:
-        config.update(config_entry.options)
-    if config_entry.options:
-        accounts = config_entry.options[CONF_ACCOUNTS]
-    else:
-        accounts = config_entry.data[CONF_ACCOUNTS]
-    sensors = []
-    for account_id in accounts:
-        sensors.append(AccountValueSensor(config[CLIENT], account_id))
+    accounts = config_entry.data[CONF_ACCOUNTS]
     sensors = [
-        entity
-        for entity in sensors
-        if not hass.states.get(f"sensor.available_funds_{entity.account_id[-4:]}")
+        AccountValueSensor(config[CLIENT], account_id) for account_id in accounts
     ]
     async_add_entities(sensors)
     return True
@@ -62,7 +52,6 @@ class AccountValueSensor(Entity):
         self._interval = timedelta(seconds=10)
         self._remove_update_interval = None
         self._should_poll = False
-
 
     @property
     def should_poll(self):
@@ -87,7 +76,7 @@ class AccountValueSensor(Entity):
     @property
     def unique_id(self):
         """Return the unique_id of the sensor."""
-        return f"{DOMAIN}.{self._name}_{self.account_id[-4:]}"
+        return f"{DOMAIN}.{self._name}_{self.account_id}"
 
     @property
     def available(self):
@@ -116,7 +105,9 @@ class AccountValueSensor(Entity):
 
     async def async_added_to_hass(self):
         """Start custom polling."""
-        self._remove_update_interval = async_track_time_interval(self.hass, self.async_schedule_update, self._interval)
+        self._remove_update_interval = async_track_time_interval(
+            self.hass, self.async_schedule_update, self._interval
+        )
 
     async def async_will_remove_from_hass(self):
         """Stop custom polling."""
@@ -156,7 +147,9 @@ class AccountValueSensor(Entity):
             )
             self._interval = timedelta(seconds=CLOSED_SCAN_INTERVAL)
             self._remove_update_interval()
-            self._remove_update_interval = async_track_time_interval(self.hass, self.async_schedule_update, self._interval)
+            self._remove_update_interval = async_track_time_interval(
+                self.hass, self.async_schedule_update, self._interval
+            )
         elif (
             self._interval != timedelta(seconds=OPEN_SCAN_INTERVAL)
             and self.hass.states.get("binary_sensor.market").state == STATE_ON
@@ -167,4 +160,6 @@ class AccountValueSensor(Entity):
             )
             self._interval = timedelta(seconds=OPEN_SCAN_INTERVAL)
             self._remove_update_interval()
-            self._remove_update_interval = async_track_time_interval(self.hass, self.async_schedule_update, self._interval)
+            self._remove_update_interval = async_track_time_interval(
+                self.hass, self.async_schedule_update, self._interval
+            )

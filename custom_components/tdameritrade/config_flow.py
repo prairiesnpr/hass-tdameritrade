@@ -117,10 +117,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry):
         """Initialize options flow."""
         self.config_entry = config_entry
-        if self.config_entry.options:
-            self.accounts = deepcopy(self.config_entry.options[CONF_ACCOUNTS])
-        else:
-            self.accounts = deepcopy(self.config_entry.data[CONF_ACCOUNTS])
+        self.accounts = deepcopy(self.config_entry.data[CONF_ACCOUNTS])
+        self.data = self.config_entry.data.copy()
 
     async def async_step_init(self, user_input=None):
         """Update the accounts."""
@@ -129,6 +127,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 self.accounts = [
                     x.strip() for x in user_input[CONF_ACCOUNTS].split(",") if x
                 ]
+            self.data[CONF_ACCOUNTS] = self.accounts
             return await self._update_accounts()
 
         data_schema = vol.Schema(
@@ -143,4 +142,5 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def _update_accounts(self):
         """Update config entry options."""
-        return self.async_create_entry(title="", data={CONF_ACCOUNTS: self.accounts})
+        self.hass.config_entries.async_update_entry(self.config_entry, data=self.data)
+        return self.async_create_entry(title="", data={})

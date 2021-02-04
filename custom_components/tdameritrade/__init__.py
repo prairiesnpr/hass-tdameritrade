@@ -66,8 +66,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         ),
     )
 
-    implementation = await config_entry_oauth2_flow.async_get_config_entry_implementation(
-        hass, entry
+    implementation = (
+        await config_entry_oauth2_flow.async_get_config_entry_implementation(
+            hass, entry
+        )
     )
 
     session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
@@ -155,7 +157,7 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     try:
         hass.data[DOMAIN][config_entry.entry_id]["unsub"]()
     except ValueError:
-        pass
+        _LOGGER.warning("Failed to unsubscribe from update listener.")
     unload_res = await asyncio.gather(
         *[
             hass.config_entries.async_forward_entry_unload(config_entry, component)

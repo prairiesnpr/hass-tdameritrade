@@ -4,7 +4,7 @@ import logging
 from homeassistant.helpers.entity import Entity
 from datetime import timedelta
 from homeassistant.core import callback
-from aiohttp.client_exceptions import ClientConnectorError, ClientResponseError
+from aiohttp.client_exceptions import ClientConnectorError, ClientResponseError, ServerDisconnectedError
 from homeassistant.helpers.event import async_track_time_interval
 
 from .const import (
@@ -119,7 +119,7 @@ class AccountValueSensor(Entity):
         resp = None
         try:
             resp = await self._client.async_get_account(self._account_id)
-        except (ClientConnectorError, ClientResponseError) as error:
+        except (ClientConnectorError, ClientResponseError, ServerDisconnectedError) as error:
             _LOGGER.warning("Client Exception: %s", error)
         if resp:
             self._available = True

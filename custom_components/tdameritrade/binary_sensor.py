@@ -7,7 +7,7 @@ from homeassistant.util import dt
 
 from datetime import timedelta
 
-from aiohttp.client_exceptions import ClientConnectorError, ClientResponseError
+from aiohttp.client_exceptions import ClientConnectorError, ClientResponseError, ServerDisconnectedError
 
 from .const import (
     DOMAIN,
@@ -116,7 +116,7 @@ class MarketOpenSensor(BinarySensorEntity):
         resp = None
         try:
             resp = await self._client.async_get_market_hours(EQUITY_MKT_TYPE)
-        except (ClientConnectorError, ClientResponseError) as error:
+        except (ClientConnectorError, ClientResponseError, ServerDisconnectedError) as error:
             _LOGGER.warning("Client Exception: %s", error)
 
         if resp:

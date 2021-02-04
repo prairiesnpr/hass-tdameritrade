@@ -145,7 +145,8 @@ async def options_update_listener(hass, config_entry):
     if old_accounts != new_accounts:
         _LOGGER.debug("Options Updated, reloading.")
         await hass.config_entries.async_reload(config_entry.entry_id)
-    _LOGGER.debug("No change to accounts, ignoring option update")
+    else:
+        _LOGGER.debug("No change to accounts, ignoring option update")
 
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):

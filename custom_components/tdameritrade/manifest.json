@@ -2,7 +2,8 @@
   "domain": "tdameritrade",
   "name": "TDAmeritrade",
   "config_flow": true,
-  "documentation": "https://www.home-assistant.io/integrations/tdameritrade",
+  "documentation": "https://github.com/prairiesnpr/hass-tdameritrade",
+  "issue_tracker": "https://github.com/prairiesnpr/hass-tdameritrade/issues",
   "requirements": [
     "tdameritrade-api==0.0.1"
   ],

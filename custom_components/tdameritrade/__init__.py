@@ -66,10 +66,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         ),
     )
 
-    implementation = (
-        await config_entry_oauth2_flow.async_get_config_entry_implementation(
-            hass, entry
-        )
+    implementation = await config_entry_oauth2_flow.async_get_config_entry_implementation(
+        hass, entry
     )
 
     session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
@@ -141,8 +139,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 async def options_update_listener(hass, config_entry):
     """Handle options update."""
-    _LOGGER.debug("Options Updated, reloading.")
-    await hass.config_entries.async_reload(config_entry.entry_id)
+    old_config = hass.data[DOMAIN][config_entry.entry_id]
+    old_accounts = old_config[CONF_ACCOUNTS]
+    new_accounts = config_entry.data[CONF_ACCOUNTS]
+    if old_accounts != new_accounts:
+        _LOGGER.debug("Options Updated, reloading.")
+        await hass.config_entries.async_reload(config_entry.entry_id)
+    _LOGGER.debug("No change to accounts, ignoring option update")
 
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):

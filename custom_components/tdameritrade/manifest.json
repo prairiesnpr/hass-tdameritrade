@@ -5,7 +5,7 @@
   "documentation": "https://github.com/prairiesnpr/hass-tdameritrade",
   "issue_tracker": "https://github.com/prairiesnpr/hass-tdameritrade/issues",
   "requirements": [
-    "tdameritrade-api==0.0.1"
+    "tdameritrade-api==0.0.2"
   ],
   "ssdp": [],
   "zeroconf": [],

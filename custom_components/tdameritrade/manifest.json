@@ -16,5 +16,6 @@
   ],
   "codeowners": [
     "@PrairieSnpr"
-  ]
+  ],
+  "iot_class": "cloud_polling"
 }

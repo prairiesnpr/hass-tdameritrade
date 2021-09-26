@@ -21,11 +21,13 @@ In the UI select Configuration > Integrations > Add.
 
 In the list choose TDAmeritrade.
 
+You will be prompted to enter your consumer key and accounts.
+
+When setting your consumer key, you must append @AMER.OAUTHAP
+
+Accounts are entered as a comma seperated list.
+
 You will be prompted to authenticate with TDAmeritrade, this requests an offline token and will be good for 90 days.
-
-Once authenticated, select the TDAmeritrade integration and select settings.
-
-Add your accounts as a comma seperated list and then click save.
 
 Restart Home Assistant.
 

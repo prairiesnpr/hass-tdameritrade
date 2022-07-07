@@ -130,7 +130,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass_data["unsub"] = entry.add_update_listener(options_update_listener)
     hass_data["client"] = AmeritradeAPI(auth)
     hass.data[DOMAIN][entry.entry_id] = hass_data
-    if entry.state == ConfigEntryState.NOT_LOADED:
+    if entry.state in [ConfigEntryState.NOT_LOADED, ConfigEntryState.SETUP_IN_PROGRESS]:
         for component in PLATFORMS:
             _LOGGER.debug("Setting up %s component", component)
             hass.async_create_task(
